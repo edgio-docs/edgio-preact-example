@@ -1,21 +1,17 @@
-// This file was added by layer0 init.
-// You should commit this file to source control.
+import { Router } from '@layer0/core/router'
+import { isProductionBuild } from '@layer0/core/environment'
 
-import { Router } from "@layer0/core/router";
+const router = new Router()
 
-export default new Router()
-  .static("build", ({ cache }) => {
-    cache({
-      edge: {
-        maxAgeSeconds: 60 * 60 * 60 * 365,
-        forcePrivateCaching: true,
-      },
-      browser: {
-        maxAgeSeconds: 0,
-        serviceWorkerSeconds: 60 * 60 * 24,
-      },
-    });
+if (isProductionBuild()) {
+  router.static('build')
+  router.fallback(({ serveStatic }) => {
+    serveStatic('build/index.html')
   })
-  .fallback(({ appShell }) => {
-    appShell("build/index.html");
-  });
+} else {
+  router.fallback(({ renderWithApp }) => {
+    renderWithApp()
+  })
+}
+
+module.exports = router
